@@ -12,5 +12,7 @@ pom.xml.asc
 .lein-failures
 .nrepl-port
 .cpcache/
-.cache/
+.clj-kondo/.cache/
+.clj-kondo/potemkin/
+.lsp
 tmp/

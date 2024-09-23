@@ -7,9 +7,8 @@
   (:import
    (java.util.zip ZipInputStream)))
 
-(defn definitions []
-  (-> (:dataelements-json config)
-      (io/file)
+(defn definitions [f]
+  (-> (io/file f)
       (slurp)
       (json/read-str :key-fn keyword)))
 

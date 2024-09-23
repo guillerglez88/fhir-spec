@@ -2,5 +2,4 @@
 
 (def config
   {:definitions-url "https://www.hl7.org/fhir/definitions.json.zip"
-   :base-dir "tmp"
-   :dataelements-json "tmp/dataelements.json"})
+   :base-dir "tmp"})
