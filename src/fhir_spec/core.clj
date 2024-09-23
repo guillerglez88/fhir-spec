@@ -5,14 +5,18 @@
    [fhir-spec.artifacts :refer [definitions]]
    [fhir-spec.gen :refer [primitive]]))
 
-(defn write-primitives []
- (with-open [wx (io/writer (io/file (str (:base-dir config) "/primitives.clj")) :append true)]
-   (.write wx (str '(ns primitives (:require [clojure.spec.alpha :as s]))))
-   (.newLine wx)
-   (.newLine wx)
-   (doseq [{:keys [resource]} (:entry (definitions "tmp/profiles-types.json"))
-           :when (#{"primitive-type"} (:kind resource))]
-     (.write wx (str (primitive resource)))
-     (.newLine wx))))
+(def definitions-by-kind
+  (delay
+    (->> (:entry (definitions "tmp/profiles-types.json"))
+         (map :resource)
+         (group-by :kind))))
 
-(write-primitives)
+(defn write-primitives []
+  (with-open [wx (io/writer (io/file (str (:base-dir config) "/primitives.clj")) :append true)]
+    (.write wx (str '(ns primitives (:require [clojure.spec.alpha :as s]))))
+    (.newLine wx)
+    (.newLine wx)
+    (doseq [definition (get @definitions-by-kind "primitive-type")]
+      (.write wx (str (primitive definition)))
+      (.newLine wx))))
+
