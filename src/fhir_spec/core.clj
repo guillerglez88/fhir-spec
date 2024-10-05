@@ -1,5 +1,6 @@
 (ns fhir-spec.core
   (:require
+   [clojure.pprint :as pp]
    [clojure.java.io :as io]
    [fhir-spec.config :refer [config]]
    [fhir-spec.artifacts :refer [definitions]]
@@ -13,10 +14,16 @@
 
 (defn write-primitives []
   (with-open [wx (io/writer (io/file (str (:base-dir config) "/primitives.clj")) :append true)]
-    (.write wx (str '(ns primitives (:require [clojure.spec.alpha :as s]))))
-    (.newLine wx)
-    (.newLine wx)
+    (pp/pprint '(ns primitives (:require [clojure.spec.alpha :as s])) wx)
     (doseq [definition (get @definitions-by-kind "primitive-type")]
-      (.write wx (str (primitive definition)))
-      (.newLine wx))))
+      (.newLine wx)
+      (.write wx (format ";; %s \n" (:url definition)))
+      (pp/pprint (primitive definition) wx))))
 
+(comment
+
+  (write-primitives)
+
+  (first (get @definitions-by-kind "complex-type"))
+
+  :.)
