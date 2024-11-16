@@ -7,7 +7,7 @@
   (:import
    (java.util.zip ZipInputStream)))
 
-(defn definitions [f]
+(defn read-file [f]
   (-> (io/file f)
       (slurp)
       (json/read-str :key-fn keyword)))
