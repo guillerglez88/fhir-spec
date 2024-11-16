@@ -12,10 +12,13 @@
    "unsignedInt" 'pos-int?})
 
 (defn id->keyword [id]
-  (let [[part1 part2] (str/split id #"\.")]
-    (if part2
-      (keyword (str "fhir." part1) part2)
-      (keyword "fhir" part1))))
+  (let [parts (str/split id #"\.")]
+    (if (= 1 (count parts))
+      (keyword "fhir" (first parts))
+      (keyword (->> (take (dec (count parts)) parts)
+                    (concat ["fhir"])
+                    (str/join "."))
+               (last parts)))))
 
 (defn id->symbol [id]
   (-> (id->keyword id)
