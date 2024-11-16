@@ -54,26 +54,34 @@
                  (list 's/and 'string? (list 'partial 're-matches (val-regex value)))))])))
 
 (defn complex [definition registry]
-  (letfn [(required [items required]
+  (letfn [(items [content]
+            (for [{:keys [id type min max]} content
+                  {:keys [code]} type
+                  :when (not= id (:type definition))]
+              {:id id
+               :type type
+               :code code
+               :min min
+               :max max
+               :key (if (= 1 (count type))
+                      (id->keyword id)
+                      (id->keyword (str/replace id #"\[x\]" (str/capitalize code))))}))
+          (required [items required]
             (let [min (get {false 0, true 1} required)]
               (->> items
                    (filter (comp #{min} :min))
-                   (mapv (comp id->symbol :id)))))]
+                   (mapv :key))))]
     (let [self (->> (:content definition)
                     (filter (comp #{(:type definition)} :id))
                     (first))
-          items (->> (:content definition)
-                     (remove (comp #{(:type definition)} :id))
-                     (vec))]
+          items (items (:content definition))]
       (concat
        [(format ";; %s" (:short self))
         (format ";; %s" (:url definition))]
-       (for [{:keys [id max type]} items
-             {:keys [code]} type
-             :when (not= id (:type definition))
+       (for [{:keys [key code max]} items
              :let [type-sym (id->symbol code)]]
          (list 's/def
-               (id->keyword id)
+               (symbol (str key))
                (if (= "*" max)
                  (list 's/coll-of type-sym ':kind 'vector? ':distinct 'true)
                  type-sym)))
