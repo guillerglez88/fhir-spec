@@ -12,7 +12,7 @@
    "unsignedInt" 'pos-int?})
 
 (defn spec-ns []
-  '(ns primitives
+  '(ns fhir-spec.data-types
      (:require [clojure.spec.alpha :as s])))
 
 (defn primitive-type [definition]

@@ -35,7 +35,7 @@
       (println))
     (println ";; --- complex ---\n")
     (doseq [{:keys [kind] :as item} (map (partial get definitions)
-                                         (read-string (io/resource "topo.edn")))
+                                         (read-string (slurp "resources/topo.edn")))
             :when (= "complex-type" kind)]
       (write (gen/complex-type item definitions))
       (println))))
@@ -52,7 +52,7 @@
 
   (download-spec!)
 
-  (with-open [wx (io/writer (io/file "tmp/data-types.cljs") :append true)]
+  (with-open [wx (io/writer (io/file "src/fhir_spec/data_types.clj") :append true)]
     (binding [*out* wx]
       (print-specs (load-definitions))))
 
