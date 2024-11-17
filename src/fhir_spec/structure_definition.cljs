@@ -44,8 +44,9 @@
 (defn attrs [sd]
   (letfn [(expand-codes [{:keys [id type min max]}]
             (for [{:keys [code]} type
-                  :let [name (str/replace id #"\[x\]" (str/capitalize code))]]
-              {:id name, :code code, :min min, :max max}))]
+                  :let [actual-code (or (val-type {:type type}) code)
+                        name (str/replace id #"\[x\]" (str/capitalize actual-code))]]
+              {:id name, :code actual-code, :min min, :max max}))]
     (->> (:content sd)
          (remove (comp #{(:type sd)} :id))
          (mapcat expand-codes)

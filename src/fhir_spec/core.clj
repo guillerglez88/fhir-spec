@@ -1,8 +1,10 @@
 (ns fhir-spec.core
   (:require
+   [clojure.java.io :as io]
    [fhir-spec.config :refer [config]]
    [fhir-spec.artifacts :refer [read-file download-spec!]]
-   [fhir-spec.gen :as gen]))
+   [fhir-spec.gen :as gen]
+   [fhir-spec.structure-definition :as sd]))
 
 (defn load-definitions []
   (letfn [(data [{:keys [type url kind name baseDefinition differential]}]
@@ -40,11 +42,12 @@
 
   (download-spec!)
 
-  (print-specs (load-definitions))
+  (with-open [wx (io/writer (io/file "tmp/data-types.cljs") :append true)]
+    (binding [*out* wx]
+      (print-specs (load-definitions))))
 
   (let [defs (load-definitions)]
-    #_
-    (sd/attrs (get defs "http://hl7.org/fhir/StructureDefinition/Timing"))
-    (gen/complex-type (get defs "http://hl7.org/fhir/StructureDefinition/Timing") defs))
+    (sd/attrs (get defs "http://hl7.org/fhir/StructureDefinition/Extension"))
+    #_(gen/complex-type (get defs "http://hl7.org/fhir/StructureDefinition/Extension") defs))
 
   :.)
