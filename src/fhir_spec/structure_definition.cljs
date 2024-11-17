@@ -51,12 +51,9 @@
          (remove (comp #{(:type sd)} :id))
          (mapcat expand-codes)
          (group-by (comp first rev-path-cells :id))
-         (map (juxt #(->> (first %)
-                          (flatten)
-                          (remove nil?)
-                          (str/join "."))
-                    second))
-         (into {}))))
+         (map (juxt #(->> (first %) (flatten) (remove nil?)) second))
+         (sort-by (comp count first) >)
+         (map (juxt #(str/join "." (first %)) second)))))
 
 (comment
 
