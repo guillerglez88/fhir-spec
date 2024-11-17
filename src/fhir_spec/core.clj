@@ -37,6 +37,12 @@
     (doseq [{:keys [kind] :as item} (map (partial get definitions)
                                          (read-string (slurp "resources/topo.edn")))
             :when (= "complex-type" kind)]
+      (write (gen/declaration item)))
+    (println)
+    (println ";; ---\n")
+    (doseq [{:keys [kind] :as item} (map (partial get definitions)
+                                         (read-string (slurp "resources/topo.edn")))
+            :when (= "complex-type" kind)]
       (write (gen/complex-type item definitions))
       (println))))
 

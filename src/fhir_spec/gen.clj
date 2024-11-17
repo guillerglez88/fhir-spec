@@ -28,6 +28,11 @@
              (or (get native-primitives (sd/val-type value))
                  (list 's/and 'string? (list 'partial 're-matches (sd/val-regex value)))))])))
 
+(defn declaration [definition]
+  [(list 's/def
+         (-> definition :name sd/spec-key str symbol)
+         '(constantly true))])
+
 (defn complex-type [definition registry]
   (letfn [(required [items required]
             (let [min (get {false 0, true 1} required)]
