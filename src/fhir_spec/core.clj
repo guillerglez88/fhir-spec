@@ -4,7 +4,8 @@
    [fhir-spec.config :refer [config]]
    [fhir-spec.artifacts :refer [read-file download-spec!]]
    [fhir-spec.gen :as gen]
-   [fhir-spec.struct-def :as sd]))
+   [fhir-spec.struct-def :as sd]
+   [clojure.pprint :as pp]))
 
 (defn load-definitions []
   (letfn [(data [{:keys [type url kind name baseDefinition differential]}]
@@ -33,14 +34,19 @@
       (write (gen/primitive-type item))
       (println))
     (println ";; --- complex ---\n")
-    (doseq [{:keys [kind] :as item} (->> (vals definitions)
-                                         (sd/graph)
-                                         (sd/topo-sort)
-                                         (remove #{"http://hl7.org/fhir/StructureDefinition/ElementDefinition"})
-                                         (map (partial get definitions)))
+    (doseq [{:keys [kind] :as item} (map (partial get definitions)
+                                         (read-string (io/resource "topo.edn")))
             :when (= "complex-type" kind)]
       (write (gen/complex-type item definitions))
       (println))))
+
+(defn print-topo [definitions]
+  (->> (vals definitions)
+       (sd/graph)
+       (sd/topo-sort)
+       (remove #{"http://hl7.org/fhir/StructureDefinition/ElementDefinition"})
+       (vec)
+       (pp/pprint)))
 
 (comment
 
@@ -49,9 +55,5 @@
   (with-open [wx (io/writer (io/file "tmp/data-types.cljs") :append true)]
     (binding [*out* wx]
       (print-specs (load-definitions))))
-
-  (let [defs (load-definitions)]
-    (sd/attrs (get defs "http://hl7.org/fhir/StructureDefinition/Timing"))
-    #_(gen/complex-type (get defs "http://hl7.org/fhir/StructureDefinition/Extension") defs))
 
   :.)
