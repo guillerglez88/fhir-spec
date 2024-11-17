@@ -1,6 +1,6 @@
 (ns fhir-spec.gen
   (:require
-   [fhir-spec.structure-definition :as sd]))
+   [fhir-spec.struct-def :as sd]))
 
 (def native-primitives
   {"boolean" 'boolean?

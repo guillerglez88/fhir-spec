@@ -1,6 +1,7 @@
-(ns fhir-spec.structure-definition
+(ns fhir-spec.struct-def
   (:require
-   [clojure.string :as str]))
+   [clojure.string :as str]
+   [clojure.set :as set]))
 
 (defn rev-path-cells
   "Parse attr path into a pair of [branch leaf] where in turn the branch is also
@@ -54,6 +55,35 @@
          (map (juxt #(->> (first %) (flatten) (remove nil?)) second))
          (sort-by (comp count first) >)
          (map (juxt #(str/join "." (first %)) second)))))
+
+(defn graph [definitions]
+  (reduce (fn [acc curr]
+            (let [url (:url curr)
+                  base (:base curr)]
+              (-> acc
+                  (update :nodes set/union #{url})
+                  (update :edges set/union (if base #{[base url]} #{})))))
+          {:edges #{} :nodes #{}}
+          definitions))
+
+(defn topo-sort
+  "https://en.wikipedia.org/wiki/Topological_sorting#Kahn's_algorithm"
+  [graph]
+  (letfn [(zero-deps [{:keys [nodes edges]}]
+            (vec (set/difference (set nodes) (->> edges (map second) set))))]
+    (loop [edges (set (filter (comp (set (:nodes graph)) second) (:edges graph)))
+           [n & s] (zero-deps graph)
+           l []]
+      (if n
+        (let [deps (set (filter (comp #{n} first) edges))
+              ms (set (map second deps))
+              edges' (set/difference edges deps)]
+          (recur edges'
+                 (concat s (zero-deps {:nodes ms :edges edges'}))
+                 (conj l n)))
+        (if (seq edges)
+          (throw (ex-info "cycles" edges))
+          l)))))
 
 (comment
 

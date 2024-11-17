@@ -4,7 +4,7 @@
    [fhir-spec.config :refer [config]]
    [fhir-spec.artifacts :refer [read-file download-spec!]]
    [fhir-spec.gen :as gen]
-   [fhir-spec.structure-definition :as sd]))
+   [fhir-spec.struct-def :as sd]))
 
 (defn load-definitions []
   (letfn [(data [{:keys [type url kind name baseDefinition differential]}]
@@ -33,7 +33,11 @@
       (write (gen/primitive-type item))
       (println))
     (println ";; --- complex ---\n")
-    (doseq [[_url {:keys [kind] :as item}] definitions
+    (doseq [{:keys [kind] :as item} (->> (vals definitions)
+                                         (sd/graph)
+                                         (sd/topo-sort)
+                                         (remove #{"http://hl7.org/fhir/StructureDefinition/ElementDefinition"})
+                                         (map (partial get definitions)))
             :when (= "complex-type" kind)]
       (write (gen/complex-type item definitions))
       (println))))
@@ -47,7 +51,7 @@
       (print-specs (load-definitions))))
 
   (let [defs (load-definitions)]
-    (sd/attrs (get defs "http://hl7.org/fhir/StructureDefinition/Extension"))
+    (sd/attrs (get defs "http://hl7.org/fhir/StructureDefinition/Timing"))
     #_(gen/complex-type (get defs "http://hl7.org/fhir/StructureDefinition/Extension") defs))
 
   :.)
