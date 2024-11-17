@@ -42,8 +42,10 @@
   (print-specs (load-definitions))
 
   (let [defs (load-definitions)]
-    (-> defs
-        (get "http://hl7.org/fhir/StructureDefinition/DataType")
-        (gen/complex defs)))
+    (gen/complex (->> (vals defs)
+                      (filter (comp #{"complex-type"} :kind))
+                      (drop 4)
+                      (first))
+                 defs))
 
   :.)

@@ -54,7 +54,7 @@
                  (list 's/and 'string? (list 'partial 're-matches (val-regex value)))))])))
 
 (defn complex [definition registry]
-  (letfn [(items [content]
+  (letfn [(attrs [content]
             (for [{:keys [id type min max]} content
                   {:keys [code]} type
                   :when (not= id (:type definition))]
@@ -74,7 +74,7 @@
     (let [self (->> (:content definition)
                     (filter (comp #{(:type definition)} :id))
                     (first))
-          items (items (:content definition))]
+          items (attrs (:content definition))]
       (concat
        [(format ";; %s" (:short self))
         (format ";; %s" (:url definition))]
@@ -95,4 +95,6 @@
                         (cond-> (list 's/keys)
                           (seq req) (concat [:req req])
                           (seq opt) (concat [:opt opt]))))
-                (id->symbol (get-in registry [(:base definition) :type]))))]))))
+                (if-let [base (:base definition)]
+                  (id->symbol (get-in registry [base :type]))
+                  '(constantly true))))]))))
