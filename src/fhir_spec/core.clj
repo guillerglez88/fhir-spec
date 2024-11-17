@@ -5,11 +5,12 @@
    [fhir-spec.gen :as gen]))
 
 (defn load-definitions []
-  (letfn [(data [{:keys [type url kind baseDefinition differential]}]
+  (letfn [(data [{:keys [type url kind name baseDefinition differential]}]
             {:type type
              :url url
              :base baseDefinition
              :kind kind
+             :name name
              :content (->> (:element differential)
                            (mapv #(select-keys % [:id :short :type :min :max])))})]
     (let [profile-types (read-file (str (:base-dir config) "/profiles-types.json"))]
@@ -27,12 +28,12 @@
     (println ";; --- primitives ---\n")
     (doseq [[_url {:keys [kind] :as item}] definitions
             :when (= "primitive-type" kind)]
-      (write (gen/primitive item))
+      (write (gen/primitive-type item))
       (println))
     (println ";; --- complex ---\n")
     (doseq [[_url {:keys [kind] :as item}] definitions
             :when (= "complex-type" kind)]
-      (write (gen/complex item definitions))
+      (write (gen/complex-type item definitions))
       (println))))
 
 (comment
@@ -42,10 +43,8 @@
   (print-specs (load-definitions))
 
   (let [defs (load-definitions)]
-    (gen/complex (->> (vals defs)
-                      (filter (comp #{"complex-type"} :kind))
-                      (drop 4)
-                      (first))
-                 defs))
+    #_
+    (sd/attrs (get defs "http://hl7.org/fhir/StructureDefinition/Timing"))
+    (gen/complex-type (get defs "http://hl7.org/fhir/StructureDefinition/Timing") defs))
 
   :.)
