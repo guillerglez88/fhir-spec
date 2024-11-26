@@ -57,12 +57,10 @@
          (map (juxt #(str/join "." (first %)) second)))))
 
 (defn graph [definitions]
-  (reduce (fn [acc curr]
-            (let [url (:url curr)
-                  base (:base curr)]
-              (-> acc
-                  (update :nodes set/union #{url})
-                  (update :edges set/union (if base #{[base url]} #{})))))
+  (reduce (fn [acc {:keys [url base]}]
+            (-> acc
+                (update :nodes set/union #{url})
+                (update :edges set/union (if base #{[base url]} #{}))))
           {:edges #{} :nodes #{}}
           definitions))
 
